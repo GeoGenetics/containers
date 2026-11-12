@@ -2,7 +2,7 @@
 FROM ubuntu:24.04
 
 ARG DEBIAN_FRONTEND=noninteractive
-ARG CONDA_VERSION=py312_25.11.1-0
+ARG TARGETARCH
 
 ENV LANG=C.UTF-8 \
     LC_ALL=C.UTF-8 \
@@ -16,8 +16,13 @@ RUN apt-get update \
         curl \
         git \
     && rm -rf /var/lib/apt/lists/* \
+    && case "$TARGETARCH" in \
+        amd64) conda_arch=x86_64 ;; \
+        arm64) conda_arch=aarch64 ;; \
+        *) echo "Unsupported architecture: $TARGETARCH" >&2; exit 1 ;; \
+       esac \
     && curl --fail --silent --show-error --location \
-        "https://repo.anaconda.com/miniconda/Miniconda3-${CONDA_VERSION}-Linux-x86_64.sh" \
+        "https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-${conda_arch}.sh" \
         --output /tmp/miniconda.sh \
     && bash /tmp/miniconda.sh -b -p "$CONDA_DIR" \
     && rm /tmp/miniconda.sh \

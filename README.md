@@ -1,6 +1,6 @@
 # Conda package test container
 
-An Ubuntu 24.04 container for checking whether Conda packages can be resolved and installed in a clean environment. It uses Miniconda and defaults to the `conda-forge` channel.
+An Ubuntu 24.04 container for checking whether Conda packages can be resolved and installed in a clean environment. It uses Miniconda, supports both x86_64 and ARM64 hosts, and defaults to the `conda-forge` channel. The test uses only the channels you specify; it does not fall back to Anaconda's default channels.
 
 ## Test locally
 

@@ -39,7 +39,7 @@ for channel in "${channels[@]}"; do
 done
 
 echo "Creating an isolated environment for: ${packages[*]}"
-conda create --yes --name package-test "${channel_args[@]}" "${packages[@]}"
+conda create --yes --override-channels --name package-test "${channel_args[@]}" "${packages[@]}"
 
 echo
 echo "Installed packages:"

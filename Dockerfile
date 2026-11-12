@@ -27,10 +27,11 @@ RUN apt-get update \
     && bash /tmp/miniconda.sh -b -p "$CONDA_DIR" \
     && rm /tmp/miniconda.sh \
     && conda config --system --set channel_priority strict \
+    && conda install --yes --override-channels --channel conda-forge conda-build \
     && conda clean --all --yes
 
 COPY scripts/test-conda-package /usr/local/bin/test-conda-package
 RUN chmod +x /usr/local/bin/test-conda-package
 
 WORKDIR /work
-ENTRYPOINT ["test-conda-package"]
+CMD ["bash"]

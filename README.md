@@ -1,35 +1,49 @@
-# Conda package test container
+# Conda package build container
 
-An Ubuntu 24.04 container for checking whether Conda packages can be resolved and installed in a clean environment. It uses Miniconda, supports both x86_64 and ARM64 hosts, and defaults to the `conda-forge` channel. The test uses only the channels you specify; it does not fall back to Anaconda's default channels.
+An Ubuntu 24.04 container for building Conda packages in a clean environment. It includes Miniconda and `conda-build`, supports both x86_64 and ARM64 hosts, and keeps the host source tree outside the image.
 
-## Test locally
+## Build a package locally
 
 Build the image:
 
 ```bash
-docker build --tag conda-package-tester .
+docker build --tag conda-package-builder .
 ```
 
-Test one or more package specifications:
+Mount the directory containing your source code and recipe. The mounted directory is available at `/work`:
 
 ```bash
-docker run --rm conda-package-tester samtools=1.21
-docker run --rm conda-package-tester python=3.12 numpy pandas
+docker run --rm -it \
+  --volume "$PWD":/work \
+  conda-package-builder \
+  conda build recipe
 ```
 
-Add channels in priority order. For Bioconda packages, use `conda-forge` before `bioconda`:
+For a recipe in a different directory, mount it explicitly:
 
 ```bash
-docker run --rm conda-package-tester \
-  --channel conda-forge --channel bioconda \
-  samtools=1.21
+docker run --rm -it \
+  --volume /path/to/project:/work \
+  conda-package-builder \
+  conda build /work/recipe
 ```
 
-The command succeeds only if Conda can solve the requested environment and install all packages. The resulting package list is printed to the log.
+`conda build` creates its build and output directories inside the container by default. To retain the built packages on the host, mount a local output directory and provide it to Conda:
+
+```bash
+mkdir -p conda-bld
+docker run --rm -it \
+  --volume "$PWD":/work \
+  --volume "$PWD/conda-bld":/conda-bld \
+  conda-package-builder \
+  conda build --croot /conda-bld recipe
+```
+
+The helper that only tests whether packages can be installed remains available as `test-conda-package`.
 
 ## GitHub Actions
 
-Use **Actions → Test Conda package → Run workflow**, enter package specifications separated by spaces, and optionally supply channels separated by spaces. The workflow builds the same Ubuntu image and runs the requested test.
+Use **Actions → Test Conda package → Run workflow**, enter package specifications separated by spaces, and optionally supply channels separated by spaces. The workflow builds the same Ubuntu image and runs the requested installation test.
 
 Examples:
 

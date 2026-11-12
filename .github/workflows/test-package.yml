@@ -1,0 +1,34 @@
+name: Test Conda package
+
+on:
+  workflow_dispatch:
+    inputs:
+      packages:
+        description: "Space-separated Conda package specifications (e.g. samtools=1.21)"
+        required: true
+        type: string
+      channels:
+        description: "Space-separated channels, in priority order (e.g. conda-forge bioconda)"
+        required: false
+        default: "conda-forge"
+        type: string
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build the Ubuntu test image
+        run: docker build --tag conda-package-tester .
+
+      - name: Install and verify packages
+        env:
+          PACKAGES: ${{ inputs.packages }}
+          CHANNELS: ${{ inputs.channels }}
+        run: |
+          channel_args=()
+          for channel in $CHANNELS; do
+            channel_args+=(--channel "$channel")
+          done
+          docker run --rm conda-package-tester "${channel_args[@]}" $PACKAGES
